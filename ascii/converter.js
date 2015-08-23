@@ -3,7 +3,7 @@
 var ASCIIconverter = function(elem) {
 
 	this.elem = elem;
-	this.baseCharWidth = 10;
+	this.baseCharWidth = 9;
 	// this.getTaintFreeImage(elem);
 	this.charSize = this.calculateCharSize();
 
@@ -15,13 +15,14 @@ var ASCIIconverter = function(elem) {
 
 	switch (elem.nodeName.toLowerCase()) {
 		case 'img':
+			this.img = elem;
 			this.processImage();
 			break;
 		case 'video':
-			ASCIIconverter.processVideo(elem);
+			// ASCIIconverter.processVideo(elem);
 			break;
 		default:
-			ASCIIconverter.processBackground(elem);
+			this.processBackground();
 	}
 
 
@@ -89,12 +90,8 @@ ASCIIconverter.prototype = {
 		request.send();
 	},
 
-	getImageData: function() {
-		this.context = this.canvas.getContext('2d');
-		this.context.drawImage(this.elem, 0, 0, this.canvas.width, this.canvas.height);
-	},
 
-	imageDataToASCII: function() {
+	convertToASCII: function() {
 		// we create a "deformed" canvas so that each pixel is then
 		// equivalent to size/space of a character in our monospace font
 		var deformedCanvasWidth = this.canvas.width / this.charSize.w;
@@ -110,7 +107,7 @@ ASCIIconverter.prototype = {
 		this.context.fillStyle = '#000';
 
 		// process smaller image
-		deformedContext.drawImage(this.elem, 0, 0, deformedCanvasWidth, deformedCanvasHeight);
+		deformedContext.drawImage(this.img, 0, 0, deformedCanvasWidth, deformedCanvasHeight);
 		data = deformedContext.getImageData(0,0,deformedCanvasWidth,deformedCanvasHeight).data;
 
 		for (var i = 0, line = 0; line < deformedCanvasHeight; line++) {
@@ -144,60 +141,70 @@ ASCIIconverter.prototype = {
 	 * image to the new canvas replacement
 	 * @return {void}
 	 */
-	preserveStyles: function() {
+	copyStyles: function() {
 		var props = ['width', 'height'];		// , 'position', 'top', 'left', 'scale'];
 		props.forEach(function(prop) {
 			var val = window.getComputedStyle(this.elem).getPropertyValue(prop);
 			this.canvas.style[prop] = val;
-
-			console.log(this.canvas, prop, val);
-
 		}, this);
 	},
 
 
 	/**
-	 * Process and convert the data if it's from an <img>
-	 * @param  {HTMLElement} img The element to convert
+	 * Generates a canvas element with ASCII image data
+	 * @return {void}
+	 */
+	generateASCIIimage: function() {
+		var width =  this.img.naturalWidth;
+		var height = this.img.naturalHeight;
+
+		this.canvas = this.createCanvas(width, height);
+		this.context = this.canvas.getContext('2d');
+		this.context.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
+		this.convertToASCII();
+	},
+
+
+	/**
+	 * Process and convert image data from an <img> element
 	 * @return {void}
 	 */
 	processImage: function() {
-		var width = this.elem.naturalWidth;
-		var height = this.elem.naturalHeight;
+		this.generateASCIIimage();
+		this.copyStyles();
 
-		this.canvas = this.createCanvas(width, height);
-		this.getImageData();
-		this.imageDataToASCII();
-		this.preserveStyles();
-
-		// update ye olde <img>
+		// replace ye olde <img>
 		this.elem.parentNode.replaceChild(this.canvas, this.elem);
+	},
+
+	/**
+	 * Process and convert background image data
+	 * @return {void}
+	 */
+	processBackground: function() {
+
+		this.img = new Image();
+
+		var imgUrl = this.elem.style.backgroundImage.slice(4, -1);		// TODO. this assumes a few things about the URL
+		var handleLoad = function() {
+			console.log({
+				w:  this.img.width,
+				h:  this.img.height,
+				nw: this.img.naturalWidth,
+				nh: this.img.naturalHeight
+			})
+
+			this.generateASCIIimage();
+			this.elem.style.backgroundImage = 'url(' + this.canvas.toDataURL() + ')';
+			this.img.removeEventListener('load', handleLoad);
+			this.img = undefined;
+		}.bind(this);
+
+		this.img.addEventListener('load', handleLoad);
+		this.img.src = imgUrl;
 	}
 
 }
-
-ASCIIconverter.processBackground = function(elem) {
-	return
-	var imgUrl = elem.style.backgroundImage.slice(4, -1);
-	var img = new Image();
-	var handleLoad = function() {
-		console.log({
-		w: img.width,
-		h: img.height,
-		nw: img.naturalWidth,
-		nh: img.naturalHeight
-		})
-		var converter = new ASCIIconverter(img, img.naturalWidth, img.naturalHeight);
-		elem.style.backgroundImage = 'url(' + converter.canvas.toDataURL() + ')';
-		// elem.style.backgroundImage = 'url(' + converter.imgCanvas.toDataURL() + ')';
-		// elem.style.backgroundImage = 'url(' + converter.smCanvas.toDataURL() + ')';
-		img.removeEventListener('load', handleLoad);
-		img = undefined;
-	};
-
-	img.addEventListener('load', handleLoad);
-	img.src = imgUrl;
-};
 
 ASCIIconverter.processVideo = function(video) {
 	// return
