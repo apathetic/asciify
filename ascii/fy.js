@@ -89,6 +89,10 @@
 					new ASCIIconverter(bg);
 				});
 
+				var vids = document.querySelectorAll('video');
+				Array.prototype.forEach.call(vids, function(vid) {
+					new ASCIIconverter(vid);
+				});
 
 
 
