@@ -1,12 +1,16 @@
 
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
+// import http from 'http';
+// import fs from 'fs';
+// import path from 'path';
+
+var http = require ('http');
+var fs = require('fs');
+var path = require('path');
 
 http.createServer(function (request, response) {
     console.log('request starting...');
 
-    var filePath = (request.url == '/') ? './demo/index.html' : './demo/' + request.url;
+    var filePath = (request.url == '/') ? './demo/sample/index.html' : './demo/sample' + request.url;
     var extname = path.extname(filePath);
     var contentType = 'text/html';
 
