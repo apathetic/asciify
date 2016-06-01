@@ -7,7 +7,7 @@ module.exports = {
     },
 
     output: {
-        path: 'demo/js',
+        path: 'demo/sample/js',
         filename: '[name].js'
     },
 

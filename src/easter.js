@@ -35,18 +35,35 @@ eggs.push({
   name: 'seasick',
   code: [83, 69, 65, 83, 73, 67, 75],
   action: () => {
+    console.log('activating seasick...');
+    let style;
+    let keyframes;
+    let animation, delay;
+
+    style = document.createElement('style');
+    keyframes = document.createTextNode('@keyframes seasick {'+
+      '0%   { transform: translateY(0) }' +
+      '50%  { transform: translateY(-10px) }' +
+      '100% { transform: translateY(0) }' +
+    '}');
+    animation = document.createTextNode('p { animation: seasick 5s infinite }');
+    delay = document.createTextNode('p:nth-child(even) { animation-delay: 1.5s }');
+
+    style.appendChild(keyframes);
+    style.appendChild(animation);
+    style.appendChild(delay);
+
+    document.head.appendChild(style);
   }
 });
 
 
 
-function addEaster(egg) {
+function detectTyping() {
   var matching = false;
   var active = [];
   var i;
   var j = 1;
-
-  // eggs.push(egg);
 
   window.document.addEventListener('keydown', function easter(e) {
     if (active.length) {
@@ -54,7 +71,7 @@ function addEaster(egg) {
       for (i = active.length; i--;) {
         if (e.keyCode === active[i].code[j]) {
           if(j === active[i].code.length - 1) {
-            window.document.removeEventListener('keydown', easter);
+            window.document.removeEventListener('keydown', easter); // RESET OR CANCEL...?
             active[i].action.call();
             active = [];    // this _should_ reset the thing...
           }
@@ -75,6 +92,32 @@ function addEaster(egg) {
   });
 }
 
+function detectClicking() {
+  var start;
+  var clicks;
+  var frequency;
 
-addEaster();
+  start = clicks = frequency = 0;
+
+  window.document.addEventListener('click', function() {
+    if (!start) { start = new Date(); }
+    frequency = ++clicks / (new Date() - start) * 1000;
+
+    if (clicks > 4 && frequency > 1) {
+      console.log('super click secret activate');
+
+      eggs[ Math.floor(Math.random()*eggs.length) ].action.call();
+
+      start = clicks = 0;    // reset
+    }
+  });
+
+}
+
+
+detectTyping();
+detectClicking();
+
+
+
 export default eggs;

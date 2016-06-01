@@ -12,18 +12,17 @@ export default class asciify {
   constructor(elem) {
     this.elem = elem;
     this.baseCharWidth = 9;
-    // this.getTaintFreeImage(elem);
     this.calculateCharSize();
 
     // calculated manually for 9px, as the fn() wasn't working
-    this.charSize = {
-      w: 5.40625,
-      h: 9
-    };
+    // this.charSize = {
+    //   w: 5.40625,
+    //   h: 9
+    // };
 
     switch (elem.nodeName.toLowerCase()) {
       case 'img':
-        this.img = elem;
+        // this.img = elem;
         this.processImage();
         break;
       case 'video':
@@ -72,71 +71,44 @@ export default class asciify {
 
 
   /**
-   * Get "taint-free" image data... this is a cross-origin security thing
-   * @param  {[type]} img [description]
-   * @return {[type]}     [description]
-   */
-  // getTaintFreeImage(img) {
-  //   var src = img.src;
-  //   var request;
-
-  //   // testing
-  //   // url = src.replace('http://hugeinc.dev.hugeops.com', 'http://d249o6o0sttdia.cloudfront.net');  // ensure the request goes to cloudfront
-  //   // url += '?http_' + window.location.hostname;
-
-  //   request = new XMLHttpRequest;
-
-  //   request.open('GET', url, true);
-  //   request.onload = function onLoad() {
-  //     if (request.status >= 200 && request.status < 400) {
-  //       // data = JSON.parse(request.responseText);
-  //       console.log(request);
-  //     } else {
-  //       // error
-  //     }
-  //   };
-
-  //   request.onerror = function onError() {
-  //     // error
-  //   };
-
-  //   request.send();
-  // }
-
-
-  /**
    * [ description]
    * @return {[type]} [description]
    */
-  convertToASCII() {
+  convertToASCII(img) {
+    var width = img.naturalWidth;
+    var height = img.naturalHeight;
+    var asciiString;
+    var character;
+    var data;
+
+    // prepare the canvas
+    this.canvas = this.createCanvas(width, height);
+    this.context = this.canvas.getContext('2d');
+    this.context.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+    this.context.fillStyle = '#fff';
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.font = this.baseCharWidth + 'px monospace';
+    this.context.fillStyle = '#000';
+
     // we create a "deformed" canvas so that each pixel is then
     // equivalent to size/space of a character in our monospace font
     const deformedCanvasWidth = this.canvas.width / this.charSize.w;
     const deformedCanvasHeight = this.canvas.height / this.charSize.h;
     var deformedCanvas = this.createCanvas(deformedCanvasWidth, deformedCanvasHeight);
     var deformedContext = deformedCanvas.getContext('2d');
-    var asciiString;
-    var character;
-    var data;
-
-    // prepare the canvas
-    this.context.fillStyle = '#fff';
-    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.context.font = this.baseCharWidth + 'px monospace';
-    this.context.fillStyle = '#000';
 
     // process smaller image
-    deformedContext.drawImage(this.img, 0, 0, deformedCanvasWidth, deformedCanvasHeight);
+    deformedContext.drawImage(img, 0, 0, deformedCanvasWidth, deformedCanvasHeight);
     data = deformedContext.getImageData(0, 0, deformedCanvasWidth, deformedCanvasHeight).data;
 
     for (let i = 0, line = 0; line < deformedCanvasHeight; line++) {
       asciiString = '';
-      for (let width = 0; width < deformedCanvasWidth; width++) {
+      for (let w = 0; w < deformedCanvasWidth; w++) {
         character = this.colorToChar(data[i], data[i + 1], data[i + 2]);
         asciiString += character;
         i += 4; // increment by 4 because the data contains rgba values and yet we only want rgb
       }
-      // write the ascii string to the context adn reset the string
+      // write the ascii string to the context and reset the string
       this.context.fillText(asciiString, 0, line * this.charSize.h);
     }
 
@@ -145,7 +117,8 @@ export default class asciify {
 
 
   /**
-   * [ description]
+   * Convert the average brightness in a "pixel" (i.e. a character grid)
+   * to the corresponding ASCII character
    * @param  {[type]} r [description]
    * @param  {[type]} g [description]
    * @param  {[type]} b [description]
@@ -161,44 +134,16 @@ export default class asciify {
 
 
   /**
-   * Preserve Styles by copying over relevant positioning stuffs from the old
-   * image to the new canvas replacement
-   * @return {void}
-   */
-  // copyStyles(src, dest) {
-  //  var props = ['width', 'height'];    // , 'position', 'top', 'left', 'scale'];
-  //  props.forEach(function(prop) {
-  //    var val = window.getComputedStyle(this.elem).getPropertyValue(prop);
-  //    this.canvas.style[prop] = val;
-  //  }, this);
-  // },
-
-
-  /**
-   * Generates a canvas element with ASCII image data
-   * @return {void}
-   */
-  generateASCIIimage() {
-    var width = this.img.naturalWidth;
-    var height = this.img.naturalHeight;
-
-    this.canvas = this.createCanvas(width, height);
-    this.context = this.canvas.getContext('2d');
-    this.context.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
-    this.convertToASCII();
-  }
-
-
-  /**
    * Process and convert image data from an <img> element
    * @return {void}
    */
   processImage() {
-    this.generateASCIIimage();
-    // this.copyStyles();
+    let imgUrl = this.elem.src;
 
-    // replace ye olde <img>
-    this.elem.parentNode.replaceChild(this.canvas, this.elem);
+    this.getImageData(imgUrl).then((img) => {
+      this.convertToASCII(img);
+      this.elem.src  = this.canvas.toDataURL();
+    });
   }
 
 
@@ -208,22 +153,42 @@ export default class asciify {
    */
   processBackground() {
     // TODO. this assumes a few things about the URL
-    var imgUrl = this.elem.style.backgroundImage.slice(4, -1);
-    var handleLoad = function() {
-      this.generateASCIIimage();
-      this.elem.style.backgroundImage = 'url(' + this.canvas.toDataURL() + ')';
-      this.img.removeEventListener('load', handleLoad);
-      this.img = undefined;
-    }.bind(this);
+    var imgUrl = this.elem.style.backgroundImage.slice(4, -1).replace(/['"]+/g, '');
 
-    this.img = new Image();
-    this.img.addEventListener('load', handleLoad);
-    this.img.src = imgUrl;
+    this.getImageData(imgUrl).then((img) => {
+      this.convertToASCII(img);
+      this.elem.style.backgroundImage = 'url(' + this.canvas.toDataURL() + ')';
+    });
   }
 
 
   /**
-   * [processVideo description]
+   * [getImageData description]
+   * @param  {[type]} url [description]
+   * @return {[type]}     [description]
+   */
+  getImageData(url) {
+    return new Promise((resolve, reject) => {
+      let img = new Image();
+      img.addEventListener('load', function() {
+        resolve(img);
+
+        // if (0) {
+          // console.log('Security Error: Trying to alter an image fetched from a different domain, insufficient CORS headers');
+          // reject();
+        // }
+
+      });
+
+      img.crossOrigin = '';
+      img.src = url;
+    });
+  }
+
+
+  /**
+   * Will dynamically ASCIIFY frames from a video. The only caveat is
+   * that it must be an HTML5 <video> to work.
    * @param  {[type]} video [description]
    * @return {[type]}       [description]
    */
@@ -235,7 +200,6 @@ export default class asciify {
     var back = document.createElement('canvas');
     var backcontext = back.getContext('2d');
     var out;
-    var request;
 
     // var imgUrl = v.getAttribute('poster');
     // var img = new Image();
@@ -268,29 +232,6 @@ export default class asciify {
 
     if (!v.paused) { play(); }
 
-    // v.crossOrigin = 'Anonymous';
-
-    // request = new XMLHttpRequest();
-    // request.open('GET', '/my/url', true);
-
-    // request.onload = function onLoad() {
-    //   if (request.status >= 200 && request.status < 400) {
-    //     var data = JSON.parse(request.responseText);
-    //   } else {
-    //     // We reached our target server, but it returned an error
-    //   }
-    // };
-    // request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    // request.setRequestHeader('Access-Control-Request-Headers', true);
-    // request.send();
-
-
-
-
-
-
-
-
     function play() {
       cw = Math.floor(v.clientWidth / self.charSize.w);
       ch = Math.floor(v.clientHeight / self.charSize.h);
@@ -307,7 +248,7 @@ export default class asciify {
       if (v.paused || v.ended) { return false; }
 
       // First, draw the into the backing canvas
-      bc.crossOrigin = 'Anonymous';
+      // bc.crossOrigin = 'Anonymous';
       bc.drawImage(v, 0, 0, w, h);
 
       // Grab the pixel data from the backing canvas
@@ -332,4 +273,4 @@ export default class asciify {
     }
   }
 
-};
+}

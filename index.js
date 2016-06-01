@@ -6,11 +6,12 @@
 var http = require ('http');
 var fs = require('fs');
 var path = require('path');
+var demo = 'sample';    // 'huge'
 
 http.createServer(function (request, response) {
-    console.log('request starting...');
+    console.log('request starting: ', request.url);
 
-    var filePath = (request.url == '/') ? './demo/sample/index.html' : './demo/sample' + request.url;
+    var filePath = (request.url === '/') ? './demo/'+demo+'/index.html' : './demo/'+demo+request.url;
     var extname = path.extname(filePath);
     var contentType = 'text/html';
 
@@ -31,7 +32,7 @@ http.createServer(function (request, response) {
 
     fs.readFile(filePath, function(error, content) {
       if (error) {
-        if(error.code == 'ENOENT'){
+        if(error.code === 'ENOENT'){
           response.writeHead(200, {'Content-Type': 'text/plain'});
           response.end('404 not found');
         }
