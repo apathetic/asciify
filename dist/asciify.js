@@ -1,15 +1,16 @@
-/*
- * asciify
- * https://github.com/apathetic/asciify
- *
- * Copyright (c) 2016 Wes Hatch
- * Licensed under the MIT license.
- *
- */
+var Asciify = (function () {
+  'use strict';
 
-export default class asciify {
+  /*
+   * asciify
+   * https://github.com/apathetic/asciify
+   *
+   * Copyright (c) 2016 Wes Hatch
+   * Licensed under the MIT license.
+   *
+   */
 
-  constructor(elem) {
+  var asciify = function asciify(elem) {
     this.elem = elem;
     this.baseCharWidth = 9;
     this.calculateCharSize();
@@ -24,13 +25,13 @@ export default class asciify {
       default:
         this.processBackground();
     }
-  }
+  };
 
 
   /**
    * Calculate the size of a mono-spaced character, in pixels
    */
-  calculateCharSize() {
+  asciify.prototype.calculateCharSize = function calculateCharSize () {
     var pre = document.createElement('pre');
     var calculated = {
       w: undefined,
@@ -46,28 +47,30 @@ export default class asciify {
     document.body.removeChild(pre);
 
     this.charSize = calculated;
-  }
+  };
 
 
   /**
    * Create a canvas at a specified size
-   * @param  {[type]} width  [description]
-   * @param  {[type]} height [description]
-   * @return {[type]}        [description]
+   * @param{[type]} width[description]
+   * @param{[type]} height [description]
+   * @return {[type]}      [description]
    */
-  createCanvas(width, height) {
+  asciify.prototype.createCanvas = function createCanvas (width, height) {
     var canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     return canvas;
-  }
+  };
 
 
   /**
    * [ description]
    * @return {[type]} [description]
    */
-  convertToASCII(img) {
+  asciify.prototype.convertToASCII = function convertToASCII (img) {
+      var this$1 = this;
+
     var width = img.naturalWidth;
     var height = img.naturalHeight;
     var asciiString;
@@ -86,8 +89,8 @@ export default class asciify {
 
     // we create a "deformed" canvas so that each pixel is then
     // equivalent to size/space of a character in our monospace font
-    const deformedCanvasWidth = this.canvas.width / this.charSize.w;
-    const deformedCanvasHeight = this.canvas.height / this.charSize.h;
+    var deformedCanvasWidth = this.canvas.width / this.charSize.w;
+    var deformedCanvasHeight = this.canvas.height / this.charSize.h;
     var deformedCanvas = this.createCanvas(deformedCanvasWidth, deformedCanvasHeight);
     var deformedContext = deformedCanvas.getContext('2d');
 
@@ -95,75 +98,79 @@ export default class asciify {
     deformedContext.drawImage(img, 0, 0, deformedCanvasWidth, deformedCanvasHeight);
     data = deformedContext.getImageData(0, 0, deformedCanvasWidth, deformedCanvasHeight).data;
 
-    for (let i = 0, line = 0; line < deformedCanvasHeight; line++) {
+    for (var i = 0, line = 0; line < deformedCanvasHeight; line++) {
       asciiString = '';
-      for (let w = 0; w < deformedCanvasWidth; w++) {
-        character = this.colorToChar(data[i], data[i + 1], data[i + 2]);
+      for (var w = 0; w < deformedCanvasWidth; w++) {
+        character = this$1.colorToChar(data[i], data[i + 1], data[i + 2]);
         asciiString += character;
         i += 4; // increment by 4 because the data contains rgba values and yet we only want rgb
       }
       // write the ascii string to the context and reset the string
-      this.context.fillText(asciiString, 0, line * this.charSize.h);
+      this$1.context.fillText(asciiString, 0, line * this$1.charSize.h);
     }
 
     // deformedCanvas = undefined;
-  }
+  };
 
 
   /**
    * Convert the average brightness in a "pixel" (i.e. a character grid)
    * to the corresponding ASCII character
-   * @param  {[type]} r [description]
-   * @param  {[type]} g [description]
-   * @param  {[type]} b [description]
-   * @return {[type]}   [description]
+   * @param{[type]} r [description]
+   * @param{[type]} g [description]
+   * @param{[type]} b [description]
+   * @return {[type]} [description]
    */
-  colorToChar(r, g, b) {
+  asciify.prototype.colorToChar = function colorToChar (r, g, b) {
     // borrowed from http://www.xanthir.com/demos/video/demo3.html
-    var brightness = (3 * r + 4 * g + b) >>> 3;   // Color -> brightness
+    var brightness = (3 * r + 4 * g + b) >>> 3; // Color -> brightness
 
     // Chop the brightness into 12 buckets, and select a char based on that.
     return '@GLftli;:,. '[Math.floor(brightness / 256 * 12)];
-  }
+  };
 
 
   /**
    * Process and convert image data from an <img> element
    * @return {void}
    */
-  processImage() {
-    let imgUrl = this.elem.src;
+  asciify.prototype.processImage = function processImage () {
+      var this$1 = this;
 
-    this.getImageData(imgUrl).then((img) => {
-      this.convertToASCII(img);
-      this.elem.src  = this.canvas.toDataURL();
+    var imgUrl = this.elem.src;
+
+    this.getImageData(imgUrl).then(function (img) {
+      this$1.convertToASCII(img);
+      this$1.elem.src= this$1.canvas.toDataURL();
     });
-  }
+  };
 
 
   /**
    * Process and convert background image data
    * @return {void}
    */
-  processBackground() {
+  asciify.prototype.processBackground = function processBackground () {
+      var this$1 = this;
+
     // TODO. this assumes a few things about the URL
     var imgUrl = this.elem.style.backgroundImage.slice(4, -1).replace(/['"]+/g, '');
 
-    this.getImageData(imgUrl).then((img) => {
-      this.convertToASCII(img);
-      this.elem.style.backgroundImage = 'url(' + this.canvas.toDataURL() + ')';
+    this.getImageData(imgUrl).then(function (img) {
+      this$1.convertToASCII(img);
+      this$1.elem.style.backgroundImage = 'url(' + this$1.canvas.toDataURL() + ')';
     });
-  }
+  };
 
 
   /**
    * [getImageData description]
-   * @param  {[type]} url [description]
-   * @return {[type]}     [description]
+   * @param{[type]} url [description]
+   * @return {[type]}   [description]
    */
-  getImageData(url) {
-    return new Promise((resolve, reject) => {
-      let img = new Image();
+  asciify.prototype.getImageData = function getImageData (url) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
       img.addEventListener('load', function() {
         resolve(img);
 
@@ -177,16 +184,16 @@ export default class asciify {
       img.crossOrigin = '';
       img.src = url;
     });
-  }
+  };
 
 
   /**
    * Will dynamically ASCIIFY frames from a video. The only caveat is
    * that it must be an HTML5 <video> to work.
-   * @param  {[type]} video [description]
-   * @return {[type]}       [description]
+   * @param{[type]} video [description]
+   * @return {[type]}     [description]
    */
-  processVideo() {
+  asciify.prototype.processVideo = function processVideo () {
     var v = this.elem;
     var self = this;
     var cw;
@@ -198,12 +205,12 @@ export default class asciify {
     // var imgUrl = v.getAttribute('poster');
     // var img = new Image();
     // var handleLoad = function() {
-    //  var converter = new ASCIIconverter(img, img.naturalWidth, img.naturalHeight);
-    //  video.parentNode.replaceChild(converter.canvas, video);
-    //  // video.setAttribute('poster', converter.canvas.toDataURL());
-    //  // video.setAttribute('poster', converter.imgCanvas.toDataURL());
-    //  // video.setAttribute('poster', converter.smCanvas.toDataURL());
-    //  img.removeEventListener('load', handleLoad);
+    //var converter = new ASCIIconverter(img, img.naturalWidth, img.naturalHeight);
+    //video.parentNode.replaceChild(converter.canvas, video);
+    //// video.setAttribute('poster', converter.canvas.toDataURL());
+    //// video.setAttribute('poster', converter.imgCanvas.toDataURL());
+    //// video.setAttribute('poster', converter.smCanvas.toDataURL());
+    //img.removeEventListener('load', handleLoad);
     // };
 
     // img.addEventListener('load', handleLoad);
@@ -217,7 +224,7 @@ export default class asciify {
     // If the video doesn't live on the same domain, we *could* try `getImageData`
     // on every frame, but that would be prohibitively expensive. Better to just bail
     if (v.src.indexOf(document.domain) === -1) {
-      //   getImageData(v.src);
+      // getImageData(v.src);
       return;
     }
 
@@ -235,7 +242,7 @@ export default class asciify {
     out.style.top = '100px';
 
     v.style.opacity = 0;
-    v.parentNode.insertBefore(out, v.nextSibling);    // "nextSibling --> "insertAfter"
+    v.parentNode.insertBefore(out, v.nextSibling);  // "nextSibling --> "insertAfter"
     v.addEventListener('play', play, false);
 
     if (!v.paused) { play(); }
@@ -263,10 +270,10 @@ export default class asciify {
       data = bc.getImageData(0, 0, w, h).data;
 
       // Loop through the pixels
-      for (let ih = 0; ih < h; ih++) {
-        for (let iw = 0; iw < w; iw++) {
+      for (var ih = 0; ih < h; ih++) {
+        for (var iw = 0; iw < w; iw++) {
           // Convert a width/height into an imagedata offset
-          let i = (ih * w + iw) * 4;
+          var i = (ih * w + iw) * 4;
           // Convert the color into an appropriate character
           chars.push(self.colorToChar(data[i], data[i + 1], data[i + 2]));
         }
@@ -279,6 +286,8 @@ export default class asciify {
       // Start over!
       setTimeout(draw, 50, v, out, bc, w, h);
     }
-  }
+  };
 
-}
+  return asciify;
+
+}());

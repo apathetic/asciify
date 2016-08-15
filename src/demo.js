@@ -18,6 +18,6 @@ eggs.push({
 
     Array.from(imgs, (img) => { new asciify(img); });
     Array.from(bgs, (bg) => { new asciify(bg); });
-    // Array.from(vids, (vid) => { new asciify(vid); });
+    Array.from(vids, (vid) => { new asciify(vid); });
   }
 });
