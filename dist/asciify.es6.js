@@ -105,9 +105,6 @@ asciify.prototype.convertToASCII = function convertToASCII (img) {
     }
     this$1.context.fillText(asciiString, 0, line * this$1.charSize.h);
   }
-
-  document.body.appendChild(this.canvas);
-
 };
 
 

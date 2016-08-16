@@ -105,9 +105,6 @@ export default class asciify {
       }
       this.context.fillText(asciiString, 0, line * this.charSize.h);
     }
-
-    document.body.appendChild(this.canvas);
-
   }
 
 
