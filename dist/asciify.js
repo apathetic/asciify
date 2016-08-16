@@ -249,9 +249,6 @@ var Asciify = (function () {
 
     if (!v.paused) { play(); }
 
-
-    document.body.appendChild(back);
-
     function play() {
       draw(v, out, backcontext, cw, ch);
 
@@ -272,7 +269,7 @@ var Asciify = (function () {
       // Grab the pixel data from the backing canvas
       data = bc.getImageData(0, 0, w, h).data;
 
-      // TODO. this is redundant with convertToASCII 
+      // TODO. this is redundant with convertToASCII
       // Loop through the pixels
       for (var ih = 0; ih < h; ih++) {
         for (var iw = 0; iw < w; iw++) {
