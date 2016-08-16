@@ -10,7 +10,13 @@
 var asciify = function asciify(elem) {
   this.elem = elem;
   this.baseCharWidth = 9;
-  this.calculateCharSize();
+
+  // this.calculateCharSize();
+  // calculated manually for 9px, as the fn() wasn't working
+  this.charSize = {
+    w: 5.40625,
+    h: 9
+  };
 
   switch (elem.nodeName.toLowerCase()) {
     case 'img':
@@ -70,43 +76,38 @@ asciify.prototype.convertToASCII = function convertToASCII (img) {
 
   var width = img.naturalWidth;
   var height = img.naturalHeight;
-  var asciiString;
-  var character;
-  var data;
+  var deformedCanvasWidth = width / this.charSize.w;
+  var deformedCanvasHeight = height / this.charSize.h;
+  // we create a "deformed" canvas so that each pixel is then
+  // equivalent to size/space of a character in our monospace font
+  var deformedCanvas = this.createCanvas(deformedCanvasWidth, deformedCanvasHeight);
+  var deformedContext = deformedCanvas.getContext('2d');
 
   // prepare the canvas
   this.canvas = this.createCanvas(width, height);
   this.context = this.canvas.getContext('2d');
-  this.context.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
-
-  // this.context.fillStyle = '#fff';
-  this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   this.context.font = this.baseCharWidth + 'px monospace';
-  this.context.fillStyle = '#000';
 
-  // we create a "deformed" canvas so that each pixel is then
-  // equivalent to size/space of a character in our monospace font
-  var deformedCanvasWidth = this.canvas.width / this.charSize.w;
-  var deformedCanvasHeight = this.canvas.height / this.charSize.h;
-  var deformedCanvas = this.createCanvas(deformedCanvasWidth, deformedCanvasHeight);
-  var deformedContext = deformedCanvas.getContext('2d');
+  // this.context.drawImage(img, 0, 0, width, height);
+  // this.context.fillStyle = '#fff'; // = '#000';
+  // this.context.fillRect(0, 0, width, height);
 
   // process smaller image
   deformedContext.drawImage(img, 0, 0, deformedCanvasWidth, deformedCanvasHeight);
-  data = deformedContext.getImageData(0, 0, deformedCanvasWidth, deformedCanvasHeight).data;
+  var data = deformedContext.getImageData(0, 0, deformedCanvasWidth, deformedCanvasHeight).data;
 
   for (var i = 0, line = 0; line < deformedCanvasHeight; line++) {
-    asciiString = '';
+    var asciiString = '';
     for (var w = 0; w < deformedCanvasWidth; w++) {
-      character = this$1.colorToChar(data[i], data[i + 1], data[i + 2]);
+      var character = this$1.colorToChar(data[i], data[i + 1], data[i + 2]);
       asciiString += character;
       i += 4; // increment by 4 because the data contains rgba values and yet we only want rgb
     }
-    // write the ascii string to the context and reset the string
     this$1.context.fillText(asciiString, 0, line * this$1.charSize.h);
   }
 
-  // deformedCanvas = undefined;
+  document.body.appendChild(this.canvas);
+
 };
 
 

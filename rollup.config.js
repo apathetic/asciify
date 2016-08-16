@@ -8,7 +8,7 @@ export default {
   ],
   targets: [
     { dest: 'dist/asciify.cjs.js', format: 'cjs' },
-    { dest: 'dist/asciify.es6.js', format: 'es6' },
+    { dest: 'dist/asciify.es6.js', format: 'es' },
     { dest: 'dist/asciify.js', format: 'iife' }
   ]
 };

@@ -12,7 +12,13 @@ export default class asciify {
   constructor(elem) {
     this.elem = elem;
     this.baseCharWidth = 9;
-    this.calculateCharSize();
+
+    // this.calculateCharSize();
+    // calculated manually for 9px, as the fn() wasn't working
+    this.charSize = {
+      w: 5.40625,
+      h: 9
+    };
 
     switch (elem.nodeName.toLowerCase()) {
       case 'img':
@@ -56,7 +62,7 @@ export default class asciify {
    * @return {[type]}        [description]
    */
   createCanvas(width, height) {
-    var canvas = document.createElement('canvas');
+    const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
     return canvas;
@@ -68,45 +74,40 @@ export default class asciify {
    * @return {[type]} [description]
    */
   convertToASCII(img) {
-    var width = img.naturalWidth;
-    var height = img.naturalHeight;
-    var asciiString;
-    var character;
-    var data;
+    const width = img.naturalWidth;
+    const height = img.naturalHeight;
+    const deformedCanvasWidth = width / this.charSize.w;
+    const deformedCanvasHeight = height / this.charSize.h;
+    // we create a "deformed" canvas so that each pixel is then
+    // equivalent to size/space of a character in our monospace font
+    const deformedCanvas = this.createCanvas(deformedCanvasWidth, deformedCanvasHeight);
+    const deformedContext = deformedCanvas.getContext('2d');
 
     // prepare the canvas
     this.canvas = this.createCanvas(width, height);
     this.context = this.canvas.getContext('2d');
-    this.context.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
-
-    // this.context.fillStyle = '#fff';
-    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.font = this.baseCharWidth + 'px monospace';
-    this.context.fillStyle = '#000';
 
-    // we create a "deformed" canvas so that each pixel is then
-    // equivalent to size/space of a character in our monospace font
-    const deformedCanvasWidth = this.canvas.width / this.charSize.w;
-    const deformedCanvasHeight = this.canvas.height / this.charSize.h;
-    var deformedCanvas = this.createCanvas(deformedCanvasWidth, deformedCanvasHeight);
-    var deformedContext = deformedCanvas.getContext('2d');
+    // this.context.drawImage(img, 0, 0, width, height);
+    // this.context.fillStyle = '#fff'; // = '#000';
+    // this.context.fillRect(0, 0, width, height);
 
     // process smaller image
     deformedContext.drawImage(img, 0, 0, deformedCanvasWidth, deformedCanvasHeight);
-    data = deformedContext.getImageData(0, 0, deformedCanvasWidth, deformedCanvasHeight).data;
+    const data = deformedContext.getImageData(0, 0, deformedCanvasWidth, deformedCanvasHeight).data;
 
     for (let i = 0, line = 0; line < deformedCanvasHeight; line++) {
-      asciiString = '';
+      let asciiString = '';
       for (let w = 0; w < deformedCanvasWidth; w++) {
-        character = this.colorToChar(data[i], data[i + 1], data[i + 2]);
+        let character = this.colorToChar(data[i], data[i + 1], data[i + 2]);
         asciiString += character;
         i += 4; // increment by 4 because the data contains rgba values and yet we only want rgb
       }
-      // write the ascii string to the context and reset the string
       this.context.fillText(asciiString, 0, line * this.charSize.h);
     }
 
-    // deformedCanvas = undefined;
+    document.body.appendChild(this.canvas);
+
   }
 
 

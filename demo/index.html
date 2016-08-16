@@ -1,71 +1,134 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title></title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Asciify.</title>
+  <meta name="viewport" content="width=device-width">
+  <link rel="icon" type="image/ico" href="favicon.ico">
+
+  <!-- demo stuffs -->
+  <link rel="stylesheet" href="https://apathetic.github.io/showcase/assets/css/main.min.css">
+  <script src="https://rawgit.com/apathetic/stickynav/master/dist/stickyNav.js"></script>
+  <script src="prism.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      new stickyNav({ nav: '#sticky' });
+    });
+  </script>
+  <!-- end demo stuffs -->
+
+
   <script src="../dist/asciify.js"></script>
+  <!-- <script src="../dist/demo.js"></script> -->
   <!-- <script src="asciify.js"></script> -->
   <style>
-    img, video, p { display:block; max-width:640px; }
-    div { width:640px; height:400px; background-size:cover }
+    img, video { display:block; max-width:640px; }
   </style>
+
 </head>
 <body>
 
-<h2>Commands:</h2>
-<ul>
-  <li>"ascii"</li>
-  <li>"clippy"</li>
-  <li>"sepia"</li>
-  <li>"monochrome"</li>
-  <li>"acid"</li>
-  <li>"seasick"</li>
-</ul>
+  <header class="condensed align-center">
+    <h1>Asciify.</h1>
+  </header>
 
+  <nav>
+    <div id="sticky">
+      <div class="container">
+        <nav data-autogenerate="true">
+          <ul></ul>
+        </nav>
+      </div>
+    </div>
+  </nav>
 
-<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+  <main class="component left-rail">
 
-<!-- https://c2.staticflickr.com/4/3825/10538921244_4f214545b7_c -->
-<img src="images/car.jpg" alt="car" id="car">
-<button onclick="var img=document.querySelector('#car'); new Asciify(img);">ASCIIFY</button>
+    <section data-nav="About" id="about">
+      <div class="container">
+        <h2>About</h2>
+      </div>
+    </section>
 
-<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <section data-nav="Demo" id="demo">
+      <div class="container">
+        <h2>Demo</h2>
 
- <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <h3>Commands:</h3>
+        <ul>
+          <li>"ascii"</li>
+          <li>"clippy"</li>
+          <li>"sepia"</li>
+          <li>"monochrome"</li>
+          <li>"acid"</li>
+          <li>"seasick"</li>
+        </ul>
 
+        <p>
+          <!-- https://c2.staticflickr.com/4/3825/10538921244_4f214545b7_c -->
+          <img src="images/car.jpg" alt="car" id="car">
+          <button data-asciify="#car" class="button button--default">ASCIIFY</button>
+        </p>
 
-<!-- <img src="https://c4.staticflickr.com/4/3348/5774924883_b7f36aea9c_b.jpg"> -->
+        <div id="lady" style="background: url(https://c2.staticflickr.com/6/5180/5388135593_36074cd26d_z.jpg); width:640px; height:400px; background-size:cover"></div>
+        <button data-asciify="#lady" class="button button--default">ASCIIFY</button>
 
-<div id="lady" style="background: url(https://c2.staticflickr.com/6/5180/5388135593_36074cd26d_z.jpg)"></div>
-<button onclick="var lady=document.querySelector('#lady'); new Asciify(lady);">ASCIIFY</button>
+         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+          quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+          consequat.</p>
 
- <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-consequat.</p>
+        <video id="vid" width="640" height="360" controls autoplay>
+          <source src="http://clips.vorwaerts-gmbh.de/VfE_html5.mp4" type="video/mp4">
+          <source src="http://clips.vorwaerts-gmbh.de/VfE.webm" type="video/webm">
+          <source src="http://clips.vorwaerts-gmbh.de/VfE.ogv" type="video/ogg">
+        </video>
+        <button data-asciify="#vid" class="button button--default">ASCIIFY</button>
 
-<video id="vid" width="640" height="360" controls autoplay>
-  <source src="http://clips.vorwaerts-gmbh.de/VfE_html5.mp4" type="video/mp4">
-  <source src="http://clips.vorwaerts-gmbh.de/VfE.webm" type="video/webm">
-  <source src="http://clips.vorwaerts-gmbh.de/VfE.ogv" type="video/ogg">
-</video>
-<button onclick="var vid=document.querySelector('#vid'); new Asciify(vid);">ASCIIFY</button>
+      </div>
+    </section>
 
+    <section data-nav="Code" id="code">
+      <div class="container">
+        <h2>Code</h2>
 
+        <pre><code class="language-javascript">
+// Works on images:
+var image = document.querySelector('#image');
+new Asciify(image);
+
+// Works on background images:
+var bg = document.querySelector('[style*="background"]');
+new Asciify(image);
+
+// WORKS ON VIDEO
+var vid = document.querySelector('video');  // (HTML5)
+new Asciify(vid);
+        </code></pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    Array.from(document.querySelectorAll('button'), function(button) {
+      var target = document.querySelector(button.getAttribute('data-asciify'));
+      if (target) {
+        button.addEventListener('click', function() {
+          new Asciify(target);
+        });
+      }
+    });
+
+    // var car = document.querySelector('#car');
+    // var lady = document.querySelector('#lady');
+    // var vid = document.querySelector('#vid');
+    //
+    // new Asciify(car);
+    // new Asciify(lady);
+    // new Asciify(vid);
+  </script>
 
 </body>
 </html>
