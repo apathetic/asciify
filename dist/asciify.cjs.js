@@ -15,9 +15,10 @@ var asciify = function asciify(elem) {
 
   // this.calculateCharSize();
   // calculated manually for 9px, as the fn() wasn't working
+
   this.charSize = {
-    w: 5.40625,
-    h: 9
+    w: 5.40625, // 8.14
+    h: 9      // 9
   };
 
   switch (elem.nodeName.toLowerCase()) {
@@ -32,16 +33,28 @@ var asciify = function asciify(elem) {
   }
 };
 
+// process(element) {
+// this.elem = element;
+// switch (element.nodeName.toLowerCase()) {
+//   case 'img':
+//     this.processImage();
+//     break;
+//   case 'video':
+//     this.processVideo();
+//     break;
+//   default:
+//     this.processBackground();
+// }
+// }
+
 
 /**
  * Calculate the size of a mono-spaced character, in pixels
  */
 asciify.prototype.calculateCharSize = function calculateCharSize () {
   var pre = document.createElement('pre');
-  var calculated = {
-    w: undefined,
-    h: undefined
-  };
+  var calculated = {};
+
   pre.textContent = 'O';
   pre.style.fontSize = this.baseCharWidth + 'px';
   pre.style.lineHeight = '1em';
@@ -78,8 +91,8 @@ asciify.prototype.convertToASCII = function convertToASCII (img) {
 
   var width = img.naturalWidth;
   var height = img.naturalHeight;
-  var deformedCanvasWidth = width / this.charSize.w;
-  var deformedCanvasHeight = height / this.charSize.h;
+  var deformedCanvasWidth = Math.floor(width / this.charSize.w);
+  var deformedCanvasHeight = Math.floor(height / this.charSize.h);
   // we create a "deformed" canvas so that each pixel is then
   // equivalent to size/space of a character in our monospace font
   var deformedCanvas = this.createCanvas(deformedCanvasWidth, deformedCanvasHeight);
@@ -138,7 +151,7 @@ asciify.prototype.processImage = function processImage () {
 
   this.getImageData(imgUrl).then(function (img) {
     this$1.convertToASCII(img);
-    this$1.elem.src= this$1.canvas.toDataURL();
+    this$1.elem.src = this$1.canvas.toDataURL();
   });
 };
 
@@ -193,11 +206,12 @@ asciify.prototype.getImageData = function getImageData (url) {
 asciify.prototype.processVideo = function processVideo () {
   var v = this.elem;
   var self = this;
-  var cw;
-  var ch;
-  var back = document.createElement('canvas');
+
+  var cw = Math.floor(v.clientWidth / self.charSize.w);
+  var ch = Math.floor(v.clientHeight / self.charSize.h) - 10; // TODO. This. Why 10?
+  var back = this.createCanvas(cw, ch);
   var backcontext = back.getContext('2d');
-  var out;
+  var out = document.createElement('pre');
 
   // var imgUrl = v.getAttribute('poster');
   // var img = new Image();
@@ -210,46 +224,37 @@ asciify.prototype.processVideo = function processVideo () {
   //img.removeEventListener('load', handleLoad);
   // };
 
-  // img.addEventListener('load', handleLoad);
-  // img.src = imgUrl;
 
-
-
-
-
-  // PSEUDOCODE
-  // If the video doesn't live on the same domain, we *could* try `getImageData`
-  // on every frame, but that would be prohibitively expensive. Better to just bail
+  // If the video doesn't live on the same domain, we will run into "tainted canvas"
+  // exceptions. Need to make sure CORS headers are set correctly
   if (v.src.indexOf(document.domain) === -1) {
-    // getImageData(v.src);
-    return;
+    // check if getImageData will work
+    // return;
   }
 
-
-
-
-
-  // var out = document.getElementById('out');
-  out = document.createElement('pre');
   out.style.fontFamily = 'monospace';
   out.style.fontSize = this.baseCharWidth + 'px';
-
-  // this.copyStyles();
   out.style.position = 'absolute';
-  out.style.top = '100px';
+  out.style.top = 0;
+  out.style.left = 0;
+  out.style.right = 0;
+  out.style.bottom = 0;
+  out.style.margin = 0;
+  out.style.zIndex = -1;// put it underneath, so video controls still work (although hidden)
 
-  v.style.opacity = 0;
+  v.style.opacity = 0.0;
   v.parentNode.insertBefore(out, v.nextSibling);  // "nextSibling --> "insertAfter"
-  v.addEventListener('play', play, false);
+  v.addEventListener('play', play);
 
   if (!v.paused) { play(); }
 
+
+  document.body.appendChild(back);
+
   function play() {
-    cw = Math.floor(v.clientWidth / self.charSize.w);
-    ch = Math.floor(v.clientHeight / self.charSize.h);
-    back.width = cw;
-    back.height = ch;
     draw(v, out, backcontext, cw, ch);
+
+
   }
 
   function draw(v, out, bc, w, h) {
@@ -259,17 +264,17 @@ asciify.prototype.processVideo = function processVideo () {
 
     if (v.paused || v.ended) { return false; }
 
-    // First, draw the into the backing canvas
+    // First, draw the frame into the backing canvas
     // bc.crossOrigin = 'Anonymous';
     bc.drawImage(v, 0, 0, w, h);
 
     // Grab the pixel data from the backing canvas
     data = bc.getImageData(0, 0, w, h).data;
 
+    // TODO. this is redundant with convertToASCII 
     // Loop through the pixels
     for (var ih = 0; ih < h; ih++) {
       for (var iw = 0; iw < w; iw++) {
-        // Convert a width/height into an imagedata offset
         var i = (ih * w + iw) * 4;
         // Convert the color into an appropriate character
         chars.push(self.colorToChar(data[i], data[i + 1], data[i + 2]));

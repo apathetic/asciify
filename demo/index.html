@@ -25,6 +25,7 @@
   <!-- <script src="asciify.js"></script> -->
   <style>
     img, video { display:block; max-width:640px; }
+    .video-wrap pre { margin:0 !important; border:0; }
   </style>
 
 </head>
@@ -49,6 +50,8 @@
     <section data-nav="About" id="about">
       <div class="container">
         <h2>About</h2>
+        <p>Turn any images, videos, or elements with a background-image into crappy lo-fi ascii art. Your site will be faster and more user-friendly as a result. Which equals more users and big dollars. Everyone wins!</p>
+        <p>While you're at it, for maximum optimization you can also take advantage of a few of the bundled features, which strip out all these "new-fangled" browser enhancements, such as border-radius, custom fonts, and color.</p>
       </div>
     </section>
 
@@ -75,16 +78,15 @@
         <div id="lady" style="background: url(https://c2.staticflickr.com/6/5180/5388135593_36074cd26d_z.jpg); width:640px; height:400px; background-size:cover"></div>
         <button data-asciify="#lady" class="button button--default">ASCIIFY</button>
 
-         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-          tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-          quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-          consequat.</p>
-
-        <video id="vid" width="640" height="360" controls autoplay>
-          <source src="http://clips.vorwaerts-gmbh.de/VfE_html5.mp4" type="video/mp4">
-          <source src="http://clips.vorwaerts-gmbh.de/VfE.webm" type="video/webm">
-          <source src="http://clips.vorwaerts-gmbh.de/VfE.ogv" type="video/ogg">
-        </video>
+        <div class="video-wrap">
+          <video id="vid" width="640" height="360" controls autoplay loop>
+            <source src="vid.mp4" type="video/mp4">
+              <source src="vid.webm" type="video/webm">
+              <!-- <source src="http://clips.vorwaerts-gmbh.de/VfE_html5.mp4" type="video/mp4"> -->
+              <!-- <source src="http://clips.vorwaerts-gmbh.de/VfE.webm" type="video/webm"> -->
+              <!-- <source src="http://clips.vorwaerts-gmbh.de/VfE.ogv" type="video/ogg"> -->
+          </video>
+        </div>
         <button data-asciify="#vid" class="button button--default">ASCIIFY</button>
 
       </div>
@@ -106,28 +108,25 @@ new Asciify(image);
 // WORKS ON VIDEO
 var vid = document.querySelector('video');  // (HTML5)
 new Asciify(vid);
+// note: for now, you'll need to wrap the &lt;video> in a &lt;div>
         </code></pre>
       </div>
     </section>
   </main>
 
+
   <script>
     Array.from(document.querySelectorAll('button'), function(button) {
       var target = document.querySelector(button.getAttribute('data-asciify'));
       if (target) {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function convert() {
           new Asciify(target);
+          button.removeEventListener('click', convert);
+          button.innerHTML = 'Optimized!';
+          button.classList.remove('button--default');
         });
       }
     });
-
-    // var car = document.querySelector('#car');
-    // var lady = document.querySelector('#lady');
-    // var vid = document.querySelector('#vid');
-    //
-    // new Asciify(car);
-    // new Asciify(lady);
-    // new Asciify(vid);
   </script>
 
 </body>
